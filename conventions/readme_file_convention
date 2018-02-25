@@ -1,0 +1,13 @@
+# Units:
+# Energy: kJ/mol
+# dih angle potential energy: kJ/mol*(rad^2)
+angles:
+   file1:
+   - filename: triacetin_angle1_-30deg.pdb
+   - qm_energy: -232.12 # kJ/mol
+   - angle_values:
+     angle_1_5_7_12: -123.23
+     angle_1_8_2_43: -213.12
+   file2: ...
+   
+   
