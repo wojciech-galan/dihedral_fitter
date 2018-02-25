@@ -14,6 +14,12 @@ class EnergyUnitConverter(float):
     """
 
     def __new__(cls, value: Union[int, float], unit: str = 'kJ/mol'):
+        """
+        EnergyUnitConverter inherits from immutable type (float), so it needs a constructor
+        :param value: value of the object
+        :param unit: energy unit
+        :return: new EnergyUnitConverter object
+        """
         assert type(value) in [int, float]
         assert unit in possible_units
         if unit != 'kJ/mol':
