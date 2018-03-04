@@ -2,9 +2,7 @@ language: python
 python:
   - "3.5"
 install:
-  - pip install -r requirements.txt
+  - make venv
 script:
-  # lint
-  - for f in $(git ls-files **/*.py); do; pep8 $f; done
-  # unit tests
+  - make pep8
   - make test
