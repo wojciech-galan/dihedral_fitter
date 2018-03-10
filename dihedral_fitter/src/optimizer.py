@@ -4,6 +4,10 @@ import abc
 import numpy
 
 
+class Optimizer(abc.ABC):
+    def __init__(self, function_to_be_optimized):
+        super().__init__()
+
 def rmsd(array_a: numpy.ndarray, array_b: numpy.ndarray) -> float:
     '''
     Computes root mean squared deviation between two numpy arrays. The arrays should be of the same shape
