@@ -10,7 +10,7 @@ class EnergyUnitConverter(float):
     Converts energy units. Internally keeps all units in kJ/mol
     """
     multipliers = {
-        'kcal/mol': 4.1868
+        'kcal/mol': 4.1868 # international calorie
     }
     def __new__(cls, value: Union[int, float], unit: str = 'kJ/mol'):
         """
