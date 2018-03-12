@@ -5,7 +5,6 @@ from dihedral_fitter.src.energy_unit import EnergyUnitConverter
 
 
 class TestEnergyUnitConverter(unittest.TestCase):
-    """Just to be sure that the tests are run from the dir containing test_data dir"""
 
     def test_creation_wrong_units(self):
         with self.assertRaises(AssertionError):

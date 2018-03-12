@@ -32,13 +32,13 @@ class TestFileReader(unittest.TestCase):
             FileReader._check_path('test_data')
 
 
-class TestCoordinateFileReader(unittest.TestCase):
+class TestFileReader(unittest.TestCase):
     def test_object_creation(self):
         with self.assertRaises(TypeError):
             FileReader(os.path.join('test_data', 'reader', 'test.simple_energy'))
 
 
-class TestPDBReader(unittest.TestCase):
+class TestSimpleEnergyReader(unittest.TestCase):
     def setUp(self):
         self.reader = SimpleEnergyReader(os.path.join('test_data', 'reader', 'test.simple_energy'))
 
