@@ -25,7 +25,7 @@ class EnergyUnitConverter(float):
             value = float(value) * cls.multipliers[unit]
         return float.__new__(cls, value)
 
-    def __init__(self, value: Union[int, float, str], unit: str = 'kJ/mol'):
+    def __init__(self, value: Union[int, float], unit: str = 'kJ/mol'):
         self.unit = 'kJ/mol'
 
     def get_energy_in_unit(self, unit: str = 'kJ/mol') -> float:
