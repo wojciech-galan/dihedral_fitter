@@ -28,20 +28,21 @@ class EnergyFileReader(FileReader):
     @abc.abstractmethod
     def __init__(self, f_path: str):
         super().__init__(f_path)
+        self._path = f_path
+        self.energies = []
 
 
 class SimpleEnergyReader(EnergyFileReader):
     """Assumes that the file contains only energy values, one per line"""
 
-    def __init__(self, f_path: str, unit: str = 'kJ/mol'):
+    def __init__(self, f_path: str, num_of_rows_per_angle: int, unit: str = 'kJ/mol'):
+        assert isinstance(num_of_rows_per_angle, int)
         super().__init__(f_path)
         self.unit = unit
-        self.energies = []
         with open(f_path) as f:
             for line in f:
                 stripped = line.strip()
                 if stripped:
                     self.energies.append(EnergyUnitConverter(float(stripped), unit))
-
-                    # def get_content(self):
-                    #     pass
+        self.energies = [self.energies[i:i + num_of_rows_per_angle] for i in
+                         range(0, len(self.energies), num_of_rows_per_angle)]
