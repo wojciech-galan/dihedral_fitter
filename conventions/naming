@@ -1,0 +1,11 @@
+Configuration: A set of atom coordinates for which a single-point energy may be calculated. May be given in form of a file [pdb, xyz, ...] or otherwise.
+
+Energy_start: the set of initial energies for each configuration, calculated by the MM (Molecular Mechanics) engine, with the condition that all the torsion angles that are about to be fitted have their energy set to 0.
+
+Coefficients_vector: the set of coefficients for the torsional energy function that produce the torsional energies for a set of configurations.
+
+Coefficients_initial: An initial set of coefficients may be supplied, in order to bootstrap the fitting procedure, and visually compare the energies with the fitted coefficients to those before fitting and investigate if progress was made. If not supplied, the initial coefficients will be a zero vector.
+
+Energy_torsion: the set of torsional energies resulting from a given Coefficients_vector for a set of configurations.
+
+Energy_target: the set of energies for each configuration that is the target of the fitting operation. The objective function aims to make Energy_start + Energy_torsion as close to Energy_target as possible. In this way, the new, optimal torsional coefficients (Coefficients_vector) will be obtained.
