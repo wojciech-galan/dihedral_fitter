@@ -28,6 +28,8 @@ class EnergyFileReader(FileReader):
     @abc.abstractmethod
     def __init__(self, f_path: str):
         super().__init__(f_path)
+        self._path = f_path
+        self.energies = []
 
 
 class SimpleEnergyReader(EnergyFileReader):
@@ -36,7 +38,6 @@ class SimpleEnergyReader(EnergyFileReader):
     def __init__(self, f_path: str, unit: str = 'kJ/mol'):
         super().__init__(f_path)
         self.unit = unit
-        self.energies = []
         with open(f_path) as f:
             for line in f:
                 stripped = line.strip()
