@@ -8,24 +8,26 @@ from typing import Callable
 from typing import List
 from scipy.optimize import least_squares
 from scipy.optimize import differential_evolution
-from dihedral_fitter.src.equations import ryckaert_bellemans_function
-from dihedral_fitter.src.equations import rmsd
-from dihedral_fitter.src.equations import move_to_zero
+from dihedral_fitter.src.lib import ryckaert_bellemans_function
+from dihedral_fitter.src.lib import rmsd_for_multiple_arrays
+from dihedral_fitter.src.lib import move_to_zero
+from dihedral_fitter.src.lib import substract_lists_of_arrays
 from dihedral_fitter.src.reader import SimpleEnergyReader
 
 
 class Optimizer(abc.ABC):
-    def __init__(self, function_used_for_minimization: Callable, function_that_mearures_deviation: Callable = rmsd):
+    def __init__(self, function_used_for_minimization: Callable,
+                 function_that_mearures_deviation: Callable = rmsd_for_multiple_arrays):
         super().__init__()
         self.function_used_for_minimization = function_used_for_minimization
         self.function_that_mearures_deviation = function_that_mearures_deviation
 
 
 class LeastSquaresOptimizer(Optimizer):
-    def __init__(self, function_that_mearures_deviation: Callable = rmsd):
+    def __init__(self, function_that_mearures_deviation: Callable = rmsd_for_multiple_arrays):
         super().__init__(least_squares, function_that_mearures_deviation)
 
-    def minimize(self, energy_start: np.ndarray, energy_target: np.ndarray, num_of_c_params: int, phi_angles,
+    def minimize(self, energy_start: List[np.ndarray], energy_target: List[np.ndarray], num_of_c_params: int, phi_angles,
                  initial_guess_for_c_params: List[float] = None):
         if initial_guess_for_c_params is None:
             initial_guess_for_c_params = [0] * num_of_c_params
@@ -37,7 +39,7 @@ class LeastSquaresOptimizer(Optimizer):
 
         # print(energy_target.energies)
         # print(energy_start.energies)
-        energy_diff = np.array(energy_target.energies) - np.array(move_to_zero(energy_start.energies))
+        energy_diff = substract_lists_of_arrays(energy_target - energy_start)
         # print(energy_diff)
         res = self.function_used_for_minimization(functools.partial(f_to_minimize, energy_diff, phi_angles),
                                                   initial_guess_for_c_params).x
@@ -47,7 +49,7 @@ class LeastSquaresOptimizer(Optimizer):
 
 
 class DifferentialEvolutionOptimizer(Optimizer):
-    def __init__(self, function_that_mearures_deviation: Callable = rmsd):
+    def __init__(self, function_that_mearures_deviation: Callable = rmsd_for_multiple_arrays):
         super().__init__(differential_evolution, function_that_mearures_deviation)
 
 
@@ -59,8 +61,8 @@ if __name__ == '__main__':
     import random
 
     lso = LeastSquaresOptimizer()
-    energy_without_dihedrals = SimpleEnergyReader(os.path.join('sample_files', 'triacetin.mm'), 36)
-    energy_qm = SimpleEnergyReader(os.path.join('sample_files', 'qm'), 36)
+    energy_without_dihedrals = np.array([move_to_zero(SimpleEnergyReader(os.path.join('sample_files', 'triacetin.mm'), 36).energies)])
+    energy_qm = np.array([SimpleEnergyReader(os.path.join('sample_files', 'qm'), 36).energies])
     lso.minimize(energy_without_dihedrals, energy_qm, 4, list(range(0, 360, 10)),
                  [random.randint(-50, 50) for _ in range(4)])
 
