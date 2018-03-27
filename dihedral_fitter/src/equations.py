@@ -41,3 +41,20 @@ def move_to_zero(num_list: List[List[float]]) -> List[List[float]]:
     """
     minimum = min([y for sub_list in num_list for y in sub_list])
     return [[y - minimum for y in sub_list] for sub_list in num_list]
+
+
+def rmsd_for_multiple_arrays(data_a: List[np.ndarray], data_b: List[np.ndarray]) -> float:
+    """
+    Computes root mean square deviation between lists of numpy arrays
+    """
+    assert len(data_a) == len(data_b)
+    if len(data_a) == 1:
+        return rmsd(data_a[0], data_b[0])
+    else:
+        # all of the arrays in data_a should have the same second dimension
+        second_dimension = data_a[0].shape[1]
+        assert all([array.shape[1]==second_dimension for array in data_a])
+        accumulator = []
+        for i in range(len(data_a)):
+            accumulator.extend(((data_a[i] - data_b[i]) ** 2).flatten())
+        return np.sqrt(np.mean(accumulator))
