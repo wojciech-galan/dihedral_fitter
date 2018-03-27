@@ -3,7 +3,7 @@
 
 import unittest
 import math
-from dihedral_fitter.src.equations import *
+from dihedral_fitter.src.lib import *
 
 
 # class TestRyckaertBellemanFunction(unittest.TestCase):
