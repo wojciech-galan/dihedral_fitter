@@ -27,9 +27,6 @@ def rmsd(array_a: np.ndarray, array_b: np.ndarray) -> float:
     :param array_b:
     :return:
     '''
-    # print(array_a)
-    # print(array_b)
-    print(np.sqrt(((array_a - array_b) ** 2).mean()))
     return np.sqrt(((array_a - array_b) ** 2).mean())
 
 
