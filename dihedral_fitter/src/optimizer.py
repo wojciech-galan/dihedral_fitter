@@ -12,19 +12,6 @@ from dihedral_fitter.src.equations import ryckaert_bellemans_function
 from dihedral_fitter.src.reader import SimpleEnergyReader
 
 
-def rmsd(array_a: np.ndarray, array_b: np.ndarray) -> float:
-    '''
-    Computes root mean squared deviation between two numpy arrays. The arrays should be of the same shape
-    :param array_a:
-    :param array_b:
-    :return:
-    '''
-    # print(array_a)
-    # print(array_b)
-    print(np.sqrt(((array_a - array_b) ** 2).mean()))
-    return np.sqrt(((array_a - array_b) ** 2).mean())
-
-
 class Optimizer(abc.ABC):
     def __init__(self, function_used_for_minimization: Callable, function_that_mearures_deviation: Callable = rmsd):
         super().__init__()
@@ -45,6 +32,7 @@ class LeastSquaresOptimizer(Optimizer):
 
         def f_to_minimize(energy_torsion, angles, c_params):
             return self.function_that_mearures_deviation(energy_torsion, ryckaert_bellemans_function(c_params, angles))
+
         # print(energy_target.energies)
         # print(energy_start.energies)
         energy_diff = np.array(energy_target.energies) - np.array(energy_start.energies)
@@ -67,10 +55,12 @@ def minimize(function_to_be_minimized: Callable, function_that_mearures_deviatio
 
 if __name__ == '__main__':
     import random
+
     lso = LeastSquaresOptimizer()
     energy_without_dihedrals = SimpleEnergyReader(os.path.join('sample_files', 'triacetin.mm'), 36)
     energy_qm = SimpleEnergyReader(os.path.join('sample_files', 'qm'), 36)
-    lso.minimize(energy_without_dihedrals, energy_qm, 4, list(range(0, 360, 10)), [random.randint(-50, 50) for _ in range(4)])
+    lso.minimize(energy_without_dihedrals, energy_qm, 4, list(range(0, 360, 10)),
+                 [random.randint(-50, 50) for _ in range(4)])
 
     # use case
     # import functools
