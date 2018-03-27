@@ -68,8 +68,8 @@ def minimize(function_to_be_minimized: Callable, function_that_mearures_deviatio
 if __name__ == '__main__':
     import random
     lso = LeastSquaresOptimizer()
-    energy_without_dihedrals = SimpleEnergyReader('/home/wojtek/PycharmProjects/fit_dihedral/res/triacetin.mm', 36)
-    energy_qm = SimpleEnergyReader('/home/wojtek/PycharmProjects/fit_dihedral/dla_Wojtka/fit_dihedral_input_files/qm', 36)
+    energy_without_dihedrals = SimpleEnergyReader(os.path.join('sample_files', 'triacetin.mm'), 36)
+    energy_qm = SimpleEnergyReader(os.path.join('sample_files', 'qm'), 36)
     lso.minimize(energy_without_dihedrals, energy_qm, 4, list(range(0, 360, 10)), [random.randint(-50, 50) for _ in range(4)])
 
     # use case
