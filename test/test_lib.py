@@ -57,6 +57,24 @@ class TestRMSDForMultipleArrays(unittest.TestCase):
         with self.assertRaises(AssertionError):
             rmsd_for_multiple_arrays([self.array_3_2, np.arange(6).reshape((2, 3))], [np.ones((3, 2)), np.ones((2, 3))])
 
+class TestSubstractListsOfArrays(unittest.TestCase):
+    def setUp(self):
+        self.array_3_2 = np.arange(6).reshape((3, 2))
+        self.array_2_2 = np.arange(4).reshape((2, 2))
+
+    def test_different_lengths(self):
+        with self.assertRaises(AssertionError):
+            substract_lists_of_arrays([self.array_3_2, self.array_2_2], [np.ones((3, 2))])
+
+    def test_different_shapes(self):
+        with self.assertRaises(AssertionError):
+            substract_lists_of_arrays([self.array_3_2, self.array_2_2], [np.ones((3, 2)), np.ones((1, 4))])
+
+    def test_data(self):
+        proper_res = [np.array([-1, 0, 1, 2, 3, 4]).reshape((3,2)), self.array_2_2]
+        subtraction_result = substract_lists_of_arrays([self.array_3_2, self.array_2_2], [np.ones((3,2)), np.zeros((2,2))])
+        self.assertTrue(all(np.allclose(proper_res[i], subtraction_result[i]) for i in range(len(proper_res))))
+
 
 if __name__ == '__main__':
     unittest.main()

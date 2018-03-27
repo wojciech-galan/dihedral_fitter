@@ -50,8 +50,23 @@ def rmsd_for_multiple_arrays(data_a: List[np.ndarray], data_b: List[np.ndarray])
     else:
         # all of the arrays in data_a should have the same second dimension
         second_dimension = data_a[0].shape[1]
-        assert all([array.shape[1]==second_dimension for array in data_a])
+        assert all([array.shape[1] == second_dimension for array in data_a])
         accumulator = []
         for i in range(len(data_a)):
             accumulator.extend(((data_a[i] - data_b[i]) ** 2).flatten())
         return np.sqrt(np.mean(accumulator))
+
+
+def substract_lists_of_arrays(data_a: List[np.ndarray], data_b: List[np.ndarray]) -> List[np.ndarray]:
+    """
+    Takes two lists of arrays and computes the difference.
+    The lists must be of the same length and corresponding elements must have the same shape.
+    """
+    assert len(data_a) == len(data_b)
+    assert all(data_a[i].shape==data_b[i].shape for i in range(len(data_a)))
+    ret_list = []
+    for i in range(len(data_a)):
+        print(data_a[i])
+        print(data_b[i])
+        ret_list.append(data_a[i] - data_b[i])
+    return ret_list
