@@ -9,6 +9,8 @@ from typing import List
 from scipy.optimize import least_squares
 from scipy.optimize import differential_evolution
 from dihedral_fitter.src.equations import ryckaert_bellemans_function
+from dihedral_fitter.src.equations import rmsd
+from dihedral_fitter.src.equations import move_to_zero
 from dihedral_fitter.src.reader import SimpleEnergyReader
 
 
@@ -35,7 +37,7 @@ class LeastSquaresOptimizer(Optimizer):
 
         # print(energy_target.energies)
         # print(energy_start.energies)
-        energy_diff = np.array(energy_target.energies) - np.array(energy_start.energies)
+        energy_diff = np.array(energy_target.energies) - np.array(move_to_zero(energy_start.energies))
         # print(energy_diff)
         res = self.function_used_for_minimization(functools.partial(f_to_minimize, energy_diff, phi_angles),
                                                   initial_guess_for_c_params).x
