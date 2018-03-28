@@ -6,16 +6,18 @@ import math
 from dihedral_fitter.src.lib import *
 
 
-# class TestRyckaertBellemanFunction(unittest.TestCase):
-#     def test_zero_angles(self):
-#         self.assertAlmostEqual(ryckaert_bellemans_function([1, 2], [0, 0]), -2)
-#
-#     def test_zero_coefs(self):
-#         self.assertAlmostEqual(ryckaert_bellemans_function([0, 0], [0, math.pi / 2]), 0)
-#
-#     def test_simple_data(self):
-#         self.assertAlmostEqual(ryckaert_bellemans_function([1, 2], [0, math.pi / 4, math.pi / 2]), 1 - math.sqrt(2))
-# TODo fix tests for ryckaert-belleman
+class TestRyckaertBellemansFunction(unittest.TestCase):
+    def test_zero_angles(self):
+        self.assertListEqual(ryckaert_bellemans_function([1, 2], [0, 0]), [-1, -1])
+
+    def test_zero_coefs(self):
+        self.assertListEqual(ryckaert_bellemans_function([0, 0], [0, math.pi / 2]), [0, 0])
+
+    def test_simple_data(self):
+        res = ryckaert_bellemans_function([1, 2], [0, math.pi / 4, math.pi / 2])
+        proper_res = [-1, 1 - math.sqrt(2), 1]
+        for i in range(len(res)):
+            self.assertAlmostEqual(res[i], proper_res[i])
 
 
 class TestRMSD(unittest.TestCase):
@@ -57,6 +59,7 @@ class TestRMSDForMultipleArrays(unittest.TestCase):
         with self.assertRaises(AssertionError):
             rmsd_for_multiple_arrays([self.array_3_2, np.arange(6).reshape((2, 3))], [np.ones((3, 2)), np.ones((2, 3))])
 
+
 class TestSubstractListsOfArrays(unittest.TestCase):
     def setUp(self):
         self.array_3_2 = np.arange(6).reshape((3, 2))
@@ -71,8 +74,9 @@ class TestSubstractListsOfArrays(unittest.TestCase):
             substract_lists_of_arrays([self.array_3_2, self.array_2_2], [np.ones((3, 2)), np.ones((1, 4))])
 
     def test_data(self):
-        proper_res = [np.array([-1, 0, 1, 2, 3, 4]).reshape((3,2)), self.array_2_2]
-        subtraction_result = substract_lists_of_arrays([self.array_3_2, self.array_2_2], [np.ones((3,2)), np.zeros((2,2))])
+        proper_res = [np.array([-1, 0, 1, 2, 3, 4]).reshape((3, 2)), self.array_2_2]
+        subtraction_result = substract_lists_of_arrays([self.array_3_2, self.array_2_2],
+                                                       [np.ones((3, 2)), np.zeros((2, 2))])
         self.assertTrue(all(np.allclose(proper_res[i], subtraction_result[i]) for i in range(len(proper_res))))
 
 
