@@ -67,7 +67,7 @@ def substract_lists_of_arrays(data_a: List[np.ndarray], data_b: List[np.ndarray]
     assert all(data_a[i].shape==data_b[i].shape for i in range(len(data_a)))
     ret_list = []
     for i in range(len(data_a)):
-        print(data_a[i])
-        print(data_b[i])
+        # print(data_a[i])
+        # print(data_b[i])
         ret_list.append(data_a[i] - data_b[i])
     return ret_list
