@@ -26,6 +26,8 @@ def fake_rmsd(array1: List[np.ndarray], array2: List[List[float]]):
     # Let's assume that the size of energy torsion is num_of_dihedral_types x num_of_configurations
     pass
 
+# Todo proper tests for rmsd and rmsd_for_multiple_arrays. Now rmsd works as expected due to second array broadcasting
+
 
 def function_to_compute_energy_torsion_wrapper(function_to_compute_energy_torsion: Callable, c_params: List[float],
                                                angles: List[float], num_of_c_params: int):
@@ -104,9 +106,8 @@ if __name__ == '__main__':
     import random
 
     lso = LeastSquaresOptimizer()
-    energy_without_dihedrals = np.array(
-        [move_to_zero(SimpleEnergyReader(os.path.join('sample_files', 'triacetin.mm'), 36).energies)])
-    energy_qm = np.array([SimpleEnergyReader(os.path.join('sample_files', 'qm'), 36).energies])
+    energy_without_dihedrals = [np.array(move_to_zero(SimpleEnergyReader(os.path.join('sample_files', 'triacetin.mm'), 36).energies))]
+    energy_qm = [np.array(SimpleEnergyReader(os.path.join('sample_files', 'qm'), 36).energies)]
     print(lso.minimize(energy_without_dihedrals, energy_qm, 4, list(range(0, 360, 10)),
                  [random.randint(-50, 50) for _ in range(4)], 1))
     results = {}
