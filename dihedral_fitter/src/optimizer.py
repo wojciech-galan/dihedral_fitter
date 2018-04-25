@@ -3,6 +3,7 @@
 import abc
 import os
 import functools
+import math
 import numpy as np
 from typing import Callable
 from typing import List
@@ -25,6 +26,7 @@ from dihedral_fitter.src.reader import SimpleEnergyReader
 def fake_rmsd(array1: List[np.ndarray], array2: List[List[float]]):
     # Let's assume that the size of energy torsion is num_of_dihedral_types x num_of_configurations
     pass
+
 
 # Todo proper tests for rmsd and rmsd_for_multiple_arrays. Now rmsd works as expected due to second array broadcasting
 
@@ -66,8 +68,8 @@ class Optimizer(abc.ABC):
         res = self.function_used_for_minimization(functools.partial(f_to_minimize, energy_diff, phi_angles),
                                                   second_argument_of_function_used_for_optimization)
         deviation = self.function_that_mearures_deviation(
-            function_to_compute_energy_torsion_wrapper(ryckaert_bellemans_function, res.x, range(0, 360, 10), 4),
-            energy_diff)
+            function_to_compute_energy_torsion_wrapper(self.function_that_computes_coefficients, res.x,
+                                                       [x * math.pi / 180 for x in range(0, 360, 10)], 4), energy_diff)
         return res.x, deviation
 
 
@@ -104,12 +106,14 @@ class DifferentialEvolutionOptimizer(Optimizer):
 
 if __name__ == '__main__':
     import random
+    angle_range = [x * math.pi / 180 for x in range(0, 360, 10)]
 
     lso = LeastSquaresOptimizer()
-    energy_without_dihedrals = [np.array(move_to_zero(SimpleEnergyReader(os.path.join('sample_files', 'triacetin.mm'), 36).energies))]
+    energy_without_dihedrals = [
+        np.array(move_to_zero(SimpleEnergyReader(os.path.join('sample_files', 'triacetin.mm'), 36).energies))]
     energy_qm = [np.array(SimpleEnergyReader(os.path.join('sample_files', 'qm'), 36).energies)]
-    print(lso.minimize(energy_without_dihedrals, energy_qm, 4, list(range(0, 360, 10)),
-                 [random.randint(-50, 50) for _ in range(4)], 1))
+    print(lso.minimize(energy_without_dihedrals, energy_qm, 4, angle_range,
+                       [random.randint(-50, 50) for _ in range(4)], 1))
     results = {}
     for strategy in ['best1bin', 'best1exp', 'rand1exp', 'randtobest1exp', 'best2exp', 'rand2exp', 'randtobest1bin',
                      'best2bin', 'rand2bin', 'rand1bin']:
@@ -120,8 +124,8 @@ if __name__ == '__main__':
                         deo = DifferentialEvolutionOptimizer(strategy=strategy, popsize=100, mutation=(.5, mutation_2),
                                                              polish=polish, init=init, recombination=recombination,
                                                              tol=0.0001)
-                        result = deo.minimize(energy_without_dihedrals, energy_qm, 4, range(0, 360, 10),
-                                              [[-30, 30] for _ in range(4)], 1)
+                        result = deo.minimize(energy_without_dihedrals, energy_qm, 4,
+                                              angle_range, [[-30, 30] for _ in range(4)], 1)
                         results[(strategy, mutation_2, polish, init, recombination)] = result
                         print(result)
     print(results.items())
