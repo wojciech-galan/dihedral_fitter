@@ -1,0 +1,9 @@
+energies:
+- atom numbers: [1, 2, 3, 4]
+  dihedral_type: CT-CT-CT-OS
+  contribution to the particle's energy computed for given angle: {0: 1.2, 10: 2.1, 20: 0.3, 30: 10.1}
+- atom numbers: [11, 12, 13, 14]
+  dihedral_type: CT-CT-CT-OS
+  contribution to the particle's energy computed for given angle: {0: 2.2, 10: 2.5, 20: 0.5, 30: 10.5}
+energy unit: kJ/mol
+angle unit: degree
