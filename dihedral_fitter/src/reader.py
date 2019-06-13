@@ -4,7 +4,11 @@
 import abc
 import os
 import re
+import yaml
+import numpy as np
 from typing import Any
+from typing import Dict
+from typing import List
 from collections import UserString
 from dihedral_fitter.src.energy_unit import EnergyUnitConverter
 
@@ -31,18 +35,26 @@ class EnergyFileReader(FileReader):
     def __init__(self, f_path: str):
         super().__init__(f_path)
         self._path = f_path
-        self.energies = []
 
 
 class YamlEnergyReader(EnergyFileReader):
     """Assumes the file is in format similar to sample_files/energy.sample.yaml"""
-    pass
+    def __init__(self, f_path:str):
+        super().__init__(f_path)
+
+    def read(self):
+        with open(self.path) as f:
+            data = yaml.load(f)
+        print(data.keys())
 
 
 class DihedralEnergies(object):
 
-    def __init__(self):
-        pass
+    def __init__(self, energy_unit:str, angle_unit:str, energies:List[Dict[str, Any]]):
+        super().__init__()
+        self.energy_unit=  energy_unit
+        self.energy_unit = angle_unit
+
 
 
 class DihedralType(UserString):
@@ -77,3 +89,5 @@ class DihedralType(UserString):
 if __name__ == '__main__':
     print(DihedralType('OS-CT-CT-CT'))
     print(DihedralType('OS-CT-CT-CT')==DihedralType('CT-CT-CT-OS'))
+    reader = YamlEnergyReader('/home/wojtek/Pobrane/energia_qm.txt')
+    reader.read()
