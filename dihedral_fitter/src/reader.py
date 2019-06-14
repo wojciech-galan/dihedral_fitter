@@ -60,7 +60,7 @@ class DihedralEnergies(object):
 class DihedralType(UserString):
 
     def __init__(self, string_a:str):
-        found = re.search('([a-zA-Z]+-[a-zA-Z]+-[a-zA-Z]+-[a-zA-Z]+)', string_a)
+        found = re.search('(\w+-\w+-\w+-\w+)', string_a)
         improper_dihedral_string_error = RuntimeError("Improper dihedral string: {}".format(string_a))
         try:
             group = found.group(1)
