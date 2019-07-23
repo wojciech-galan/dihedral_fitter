@@ -4,7 +4,11 @@
 import abc
 import os
 import re
+import yaml
+import numpy as np
 from typing import Any
+from typing import Tuple
+from typing import List
 from collections import UserString
 from dihedral_fitter.src.energy_unit import EnergyUnitConverter
 
@@ -31,18 +35,32 @@ class EnergyFileReader(FileReader):
     def __init__(self, f_path: str):
         super().__init__(f_path)
         self._path = f_path
-        self.energies = []
 
 
-class YamlEnergyReader(EnergyFileReader):
-    """Assumes the file is in format similar to sample_files/energy.sample.yaml"""
-    pass
+# class YamlEnergyReader(EnergyFileReader):
+#     """Assumes the file is in format similar to sample_files/energy.sample.yaml"""
+#     def __init__(self, f_path:str):
+#         super().__init__(f_path)
+#
+#     def read(self):
+#         with open(self.path) as f:
+#             data = yaml.load(f)
+#         print(data.keys())
+class DihedralContainer(object):
+
+    def __init__(self, data:List[DihedralData]):
+        super().__init__()
+        self.data = data
 
 
-class DihedralEnergies(object):
+class DihedralData(object):
 
-    def __init__(self):
-        pass
+    def __init__(self, energy_unit:str, angle_unit:str, atom_numbers:List[int], energy_for_angle_tuples:List[Tuple[float]]):
+        super().__init__()
+        self.energy_unit=  energy_unit
+        self.angle_unit = angle_unit
+        self.atom_numbers = atom_numbers
+        self.angles, self.energies  = zip(*energy_for_angle_tuples)
 
 
 class DihedralType(UserString):
@@ -59,7 +77,7 @@ class DihedralType(UserString):
         super().__init__(DihedralType._alphabetic_order(string_a))
 
     @staticmethod
-    def _alphabetic_order(string_a:str):
+    def _alphabetic_order(string_a: str):
         splitted = string_a.split('-')
         if splitted[-1] < splitted[0]:
             return '-'.join(reversed(splitted))
@@ -74,6 +92,9 @@ class DihedralType(UserString):
     def __ne__(self, other):
         return not self.__eq__(other)
 
+
 if __name__ == '__main__':
     print(DihedralType('OS-CT-CT-CT'))
-    print(DihedralType('OS-CT-CT-CT')==DihedralType('CT-CT-CT-OS'))
+    print(DihedralType('OS-CT-CT-CT') == DihedralType('CT-CT-CT-OS'))
+    reader = YamlEnergyReader('/home/wojtek/Pobrane/energia_qm.txt')
+    reader.read()
