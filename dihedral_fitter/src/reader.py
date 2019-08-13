@@ -4,11 +4,7 @@
 import abc
 import os
 import re
-import yaml
-import numpy as np
 from typing import Any
-from typing import Tuple
-from typing import List
 from collections import UserString
 from dihedral_fitter.src.energy_unit import EnergyUnitConverter
 
@@ -65,7 +61,7 @@ class DihedralData(object):
 
 class DihedralType(UserString):
 
-    def __init__(self, string_a:str):
+    def __init__(self, string_a: str, atom_numbers: List[str]):
         found = re.search('(\w+-\w+-\w+-\w+)', string_a)
         improper_dihedral_string_error = RuntimeError("Improper dihedral string: {}".format(string_a))
         try:
@@ -74,12 +70,13 @@ class DihedralType(UserString):
             raise improper_dihedral_string_error
         if len(string_a) != len(group):
             raise improper_dihedral_string_error
-        super().__init__(DihedralType._alphabetic_order(string_a))
+        super().__init__(DihedralType._alphabetic_order(string_a, atom_numbers))
 
     @staticmethod
-    def _alphabetic_order(string_a: str):
+    def _alphabetic_order(string_a: str, atom_numbers: List[str]):
         splitted = string_a.split('-')
         if splitted[-1] < splitted[0]:
+            atom_numbers.reverse()
             return '-'.join(reversed(splitted))
         return string_a
 
