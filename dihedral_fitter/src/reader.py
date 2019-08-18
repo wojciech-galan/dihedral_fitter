@@ -48,20 +48,19 @@ class YamlEnergyReader(FileReader):
         energy_unit = data[-1]['energy_unit']
         angle_unit = data[-1]['angle_unit']
         assert angle_unit == 'degree'  # todo support for radian
-        energies = [
-            {'energy': EnergyUnitConverter(energy_dict['energy'], energy_unit), 'dihedrals': energy_dict['dihedrals']}
-            for energy_dict in data[:-1]]
+        energies = [{'energy': EnergyUnitConverter(energy_dict['energy'], energy_unit).get_energy_in_unit('kJ/mol'),
+                     'dihedrals': energy_dict['dihedrals']} for energy_dict in data[:-1]]
         return energies
 
 
-class DihedralData(object):
-    def __init__(self, energy_unit: str, angle_unit: str, atom_numbers: List[int],
-                 energy_for_angle_tuples: List[Tuple[float]]):
-        super().__init__()
-        self.energy_unit = energy_unit
-        self.angle_unit = angle_unit
-        self.atom_numbers = atom_numbers
-        self.angles, self.energies = zip(*energy_for_angle_tuples)
+# class DihedralData(object):
+#     def __init__(self, energy_unit: str, angle_unit: str, atom_numbers: List[int],
+#                  energy_for_angle_tuples: List[Tuple[float]]):
+#         super().__init__()
+#         self.energy_unit = energy_unit
+#         self.angle_unit = angle_unit
+#         self.atom_numbers = atom_numbers
+#         self.angles, self.energies = zip(*energy_for_angle_tuples)
 
 
 class DihedralType(UserString):
