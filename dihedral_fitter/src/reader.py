@@ -4,7 +4,10 @@
 import abc
 import os
 import re
-from typing import Any
+import json
+import yaml
+from typing import Tuple
+from typing import List
 from collections import UserString
 from dihedral_fitter.src.energy_unit import EnergyUnitConverter
 
@@ -21,46 +24,47 @@ class FileReader(abc.ABC):
         assert type(f_path) is str
         assert os.path.exists(f_path) and os.path.isfile(f_path)
 
-        # @abc.abstractmethod
-        # def get_content(self) -> Any:
-        #     pass
+
+class JsonMapFileReader(FileReader):
+    def __init__(self, f_path):
+        super().__init__(f_path)
+
+    def read(self):
+        with open(self.path) as f:
+            content = json.load(f)
+        ret_dict = {}
+        for k, v in content.items():
+            ret_dict[k] = DihedralType(*v)
+        return ret_dict
 
 
-class EnergyFileReader(FileReader):
-    @abc.abstractmethod
+class YamlEnergyReader(FileReader):
     def __init__(self, f_path: str):
         super().__init__(f_path)
-        self._path = f_path
 
-
-# class YamlEnergyReader(EnergyFileReader):
-#     """Assumes the file is in format similar to sample_files/energy.sample.yaml"""
-#     def __init__(self, f_path:str):
-#         super().__init__(f_path)
-#
-#     def read(self):
-#         with open(self.path) as f:
-#             data = yaml.load(f)
-#         print(data.keys())
-class DihedralContainer(object):
-
-    def __init__(self, data:List[DihedralData]):
-        super().__init__()
-        self.data = data
+    def read(self):
+        with open(self.path) as f:
+            data = yaml.safe_load(f)
+        energy_unit = data[-1]['energy_unit']
+        angle_unit = data[-1]['angle_unit']
+        assert angle_unit == 'degree'  # todo support for radian
+        energies = [
+            {'energy': EnergyUnitConverter(energy_dict['energy'], energy_unit), 'dihedrals': energy_dict['dihedrals']}
+            for energy_dict in data[:-1]]
+        return energies
 
 
 class DihedralData(object):
-
-    def __init__(self, energy_unit:str, angle_unit:str, atom_numbers:List[int], energy_for_angle_tuples:List[Tuple[float]]):
+    def __init__(self, energy_unit: str, angle_unit: str, atom_numbers: List[int],
+                 energy_for_angle_tuples: List[Tuple[float]]):
         super().__init__()
-        self.energy_unit=  energy_unit
+        self.energy_unit = energy_unit
         self.angle_unit = angle_unit
         self.atom_numbers = atom_numbers
-        self.angles, self.energies  = zip(*energy_for_angle_tuples)
+        self.angles, self.energies = zip(*energy_for_angle_tuples)
 
 
 class DihedralType(UserString):
-
     def __init__(self, string_a: str, atom_numbers: List[str]):
         found = re.search('(\w+-\w+-\w+-\w+)', string_a)
         improper_dihedral_string_error = RuntimeError("Improper dihedral string: {}".format(string_a))
@@ -70,15 +74,20 @@ class DihedralType(UserString):
             raise improper_dihedral_string_error
         if len(string_a) != len(group):
             raise improper_dihedral_string_error
-        super().__init__(DihedralType._alphabetic_order(string_a, atom_numbers))
+        ordered_atoms_string, ordered_atom_numbers = DihedralType._alphabetic_order(string_a, atom_numbers)
+        super().__init__(ordered_atoms_string)
+        self.atom_numbers = ordered_atom_numbers
 
     @staticmethod
     def _alphabetic_order(string_a: str, atom_numbers: List[str]):
         splitted = string_a.split('-')
         if splitted[-1] < splitted[0]:
             atom_numbers.reverse()
-            return '-'.join(reversed(splitted))
-        return string_a
+            return '-'.join(reversed(splitted)), atom_numbers
+        return string_a, atom_numbers
+
+    def equal_dihedral_type(self, other):
+        return isinstance(other, self.__class__) and self.data == other.data
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -91,7 +100,12 @@ class DihedralType(UserString):
 
 
 if __name__ == '__main__':
-    print(DihedralType('OS-CT-CT-CT'))
-    print(DihedralType('OS-CT-CT-CT') == DihedralType('CT-CT-CT-OS'))
-    reader = YamlEnergyReader('/home/wojtek/Pobrane/energia_qm.txt')
-    reader.read()
+    print(DihedralType('OS-CT-CT-CT', []))
+    print(DihedralType('OS-CT-CT-CT', []) == DihedralType('CT-CT-CT-OS', []))
+    reader = JsonMapFileReader("/home/wojtek/PycharmProjects/dihedral_fitter/sample_files/plik1.json")
+    mapping = reader.read()
+    reader = YamlEnergyReader("/home/wojtek/PycharmProjects/dihedral_fitter/sample_files/E_zRB.yaml")
+    energies = reader.read()
+    print(energies[-1])
+    # reader = YamlEnergyReader('/home/wojtek/Pobrane/energia_qm.txt')
+    # reader.read()
