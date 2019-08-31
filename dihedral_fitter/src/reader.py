@@ -90,14 +90,16 @@ class DihedralType(UserString):
         return not self.__eq__(other)
 
     def __hash__(self):
-        return 7*hash(self.data) + 11*hash(self.atom_numbers)
+        return 7 * hash(self.data) + 11 * hash(self.atom_numbers)
 
 
 class DihedralDataContainer(object):
     """
     Merges energies with metadata
     """
-    def __init__(self, energies_data: List[Dict[str, Union[float, Dict[int, float]]]], angle_mapping: Dict[int, DihedralType]):
+
+    def __init__(self, energies_data: List[Dict[str, Union[float, Dict[int, float]]]],
+                 angle_mapping: Dict[int, DihedralType]):
         """
         Creates
         :param energies_data: list of dictionaries containing energies (in kj/mol) for given angles (in degrees)
@@ -105,14 +107,18 @@ class DihedralDataContainer(object):
         :param angle_mapping: translation between angle number and DihedralType
         """
         super().__init__()
-        self.data = {DihedralData(energy_data['dihedrals'], angle_mapping):energy_data['energy'] for energy_data in energies_data}
+        self.data = {
+        frozendict({angle_mapping[k]: v for k, v in energy_data['dihedrals'].items()}): energy_data['energy'] for
+        energy_data in energies_data}
 
+    def items(self):
+        return self.data.items()
 
-class DihedralData(object):
+    def __len__(self):
+        return len(self.data)
 
-    def __init__(self, dihedral_data:Dict[int, float], angle_mapping: Dict[int, DihedralType]):
-        super().__init__()
-        self.data = frozendict({angle_mapping[k]:v for k, v in dihedral_data.items()})
+    def __getitem__(self, item):
+        return self.data[item]
 
 
 if __name__ == '__main__':
@@ -124,4 +130,8 @@ if __name__ == '__main__':
     energies = reader.read()
     print(energies[-1])
     print(mapping)
-    DihedralData(energies[-1]['dihedrals'], mapping)
+    # DihedralData(energies[-1]['dihedrals'], mapping)
+    for k, v in DihedralDataContainer(energies, mapping).items():
+        print(k)
+        print(v)
+        raise
