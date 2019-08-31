@@ -38,29 +38,5 @@ class TestFileReader(unittest.TestCase):
             FileReader(os.path.join('test_data', 'reader', 'test.simple_energy'))
 
 
-class TestSimpleEnergyReader(unittest.TestCase):
-    def setUp(self):
-        self.reader1 = SimpleEnergyReader(os.path.join('test_data', 'reader', 'test.simple_energy'), 1)
-        self.reader2 = SimpleEnergyReader(os.path.join('test_data', 'reader', 'test.simple_energy'), 2)
-
-    def test_path_is_string(self):
-        with self.assertRaises(AssertionError):
-            SimpleEnergyReader([], 1)
-
-    def test_file_exists(self):
-        with self.assertRaises(AssertionError):
-            SimpleEnergyReader('test_data77', 1)
-
-    def test_file_is_a_regular_file_for_directory(self):
-        with self.assertRaises(AssertionError):
-            SimpleEnergyReader('test_data', 1)
-
-    def test_energy_values_1(self):
-        self.assertListEqual([[EnergyUnitConverter(3.93)], [EnergyUnitConverter(3.86)]], self.reader1.energies)
-
-    def test_energy_values_2(self):
-        self.assertListEqual([[EnergyUnitConverter(3.93), EnergyUnitConverter(3.86)]], self.reader2.energies)
-
-
 if __name__ == '__main__':
     unittest.main()
