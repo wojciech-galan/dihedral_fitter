@@ -6,9 +6,11 @@ import os
 import re
 import json
 import yaml
-from typing import Tuple
+from typing import Dict
 from typing import List
+from typing import Union
 from collections import UserString
+from frozendict import frozendict
 from dihedral_fitter.src.energy_unit import EnergyUnitConverter
 
 
@@ -34,7 +36,7 @@ class JsonMapFileReader(FileReader):
             content = json.load(f)
         ret_dict = {}
         for k, v in content.items():
-            ret_dict[k] = DihedralType(*v)
+            ret_dict[int(k)] = DihedralType(*v)
         return ret_dict
 
 
@@ -53,16 +55,6 @@ class YamlEnergyReader(FileReader):
         return energies
 
 
-# class DihedralData(object):
-#     def __init__(self, energy_unit: str, angle_unit: str, atom_numbers: List[int],
-#                  energy_for_angle_tuples: List[Tuple[float]]):
-#         super().__init__()
-#         self.energy_unit = energy_unit
-#         self.angle_unit = angle_unit
-#         self.atom_numbers = atom_numbers
-#         self.angles, self.energies = zip(*energy_for_angle_tuples)
-
-
 class DihedralType(UserString):
     def __init__(self, string_a: str, atom_numbers: List[str]):
         found = re.search('(\w+-\w+-\w+-\w+)', string_a)
@@ -75,7 +67,7 @@ class DihedralType(UserString):
             raise improper_dihedral_string_error
         ordered_atoms_string, ordered_atom_numbers = DihedralType._alphabetic_order(string_a, atom_numbers)
         super().__init__(ordered_atoms_string)
-        self.atom_numbers = ordered_atom_numbers
+        self.atom_numbers = tuple(ordered_atom_numbers)
 
     @staticmethod
     def _alphabetic_order(string_a: str, atom_numbers: List[str]):
@@ -97,6 +89,31 @@ class DihedralType(UserString):
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    def __hash__(self):
+        return 7*hash(self.data) + 11*hash(self.atom_numbers)
+
+
+class DihedralDataContainer(object):
+    """
+    Merges energies with metadata
+    """
+    def __init__(self, energies_data: List[Dict[str, Union[float, Dict[int, float]]]], angle_mapping: Dict[int, DihedralType]):
+        """
+        Creates
+        :param energies_data: list of dictionaries containing energies (in kj/mol) for given angles (in degrees)
+                example dictionary: {'energy': 19.1844, 'dihedrals': {0: 175.995, 1: 102.256, 2: -179.726, 3: 81.27}}
+        :param angle_mapping: translation between angle number and DihedralType
+        """
+        super().__init__()
+        self.data = {DihedralData(energy_data['dihedrals'], angle_mapping):energy_data['energy'] for energy_data in energies_data}
+
+
+class DihedralData(object):
+
+    def __init__(self, dihedral_data:Dict[int, float], angle_mapping: Dict[int, DihedralType]):
+        super().__init__()
+        self.data = frozendict({angle_mapping[k]:v for k, v in dihedral_data.items()})
+
 
 if __name__ == '__main__':
     print(DihedralType('OS-CT-CT-CT', []))
@@ -106,5 +123,5 @@ if __name__ == '__main__':
     reader = YamlEnergyReader("/home/wojtek/PycharmProjects/dihedral_fitter/sample_files/E_zRB.yaml")
     energies = reader.read()
     print(energies[-1])
-    # reader = YamlEnergyReader('/home/wojtek/Pobrane/energia_qm.txt')
-    # reader.read()
+    print(mapping)
+    DihedralData(energies[-1]['dihedrals'], mapping)
