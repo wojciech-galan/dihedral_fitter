@@ -107,9 +107,35 @@ class DihedralDataContainer(object):
         :param angle_mapping: translation between angle number and DihedralType
         """
         super().__init__()
-        self.data = {
-        frozendict({angle_mapping[k]: v for k, v in energy_data['dihedrals'].items()}): energy_data['energy'] for
-        energy_data in energies_data}
+        self.data = {}
+        dihedral_nums_groupped_by_string = self.__group_dihedrals(angle_mapping)
+        print(dihedral_nums_groupped_by_string)
+        for energy_data in energies_data:
+            data_for_given_energy = {}
+            for dihedral_string, dihetral_numbers in dihedral_nums_groupped_by_string.items():
+                data_for_given_energy[dihedral_string] = tuple([energy_data['dihedrals'][dihetral_number] for dihetral_number in dihetral_numbers])
+            self.data[frozendict(data_for_given_energy)] = energy_data['energy']
+
+    @staticmethod
+    def __group_dihedrals(angle_mapping: Dict[int, DihedralType]) -> Dict[str, List[int]]:
+        i = 0
+        ret_dict = {}
+        angle_mapping_items = list(angle_mapping.items())
+        while i < len(angle_mapping_items):
+            angle_numbers = [angle_mapping_items[i][0]]
+            dihedral_type = angle_mapping_items[i][1]
+            dihedral_atoms_string = dihedral_type.data
+            j = i + 1
+            while j < len(angle_mapping_items):
+                dihedral_2_type = angle_mapping_items[j][1]
+                if dihedral_atoms_string == dihedral_2_type.data:
+                    angle_numbers.append(angle_mapping_items[j][0])
+                    del angle_mapping_items[j]
+                else:
+                    j += 1
+            ret_dict[dihedral_atoms_string] = angle_numbers
+            i += 1
+        return ret_dict
 
     def items(self):
         return self.data.items()
@@ -132,6 +158,6 @@ if __name__ == '__main__':
     print(mapping)
     # DihedralData(energies[-1]['dihedrals'], mapping)
     for k, v in DihedralDataContainer(energies, mapping).items():
-        print(k)
+        print(len(k), k)
         print(v)
         raise
