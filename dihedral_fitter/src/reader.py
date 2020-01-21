@@ -47,12 +47,12 @@ class YamlEnergyReader(FileReader):
     def read(self):
         with open(self.path) as f:
             data = yaml.safe_load(f)
-        energy_unit = data[-1]['energy_unit']
-        angle_unit = data[-1]['angle_unit']
+        energy_unit = data['energy_unit']
+        angle_unit = data['angle_unit']
         assert angle_unit == 'degree'  # todo support for radian
-        energies = [{'energy': EnergyUnitConverter(energy_dict['energy'], energy_unit).get_energy_in_unit('kJ/mol'),
-                     'dihedrals': energy_dict['dihedrals']} for energy_dict in data[:-1]]
-        return energies
+        energy = EnergyUnitConverter(data['energy'], energy_unit).get_energy_in_unit('kJ/mol')
+        dihedrals = data['dihedrals']
+        return energy, dihedrals
 
 
 class DihedralType(UserString):
