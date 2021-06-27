@@ -9,6 +9,7 @@ import yaml
 import numpy as np
 from typing import Dict
 from typing import List
+from typing import Tuple
 from typing import Union
 from collections import UserString
 from dihedral_fitter.src.energy_unit import EnergyUnitConverter
@@ -44,7 +45,7 @@ class YamlEnergyReader(FileReader):
     def __init__(self, f_path: str):
         super().__init__(f_path)
 
-    def read(self):
+    def read(self) -> Tuple[Union[float, List[Dict[int, float]]]]:
         with open(self.path) as f:
             data = yaml.safe_load(f)
         energy_unit = data['energy_unit']
@@ -98,26 +99,19 @@ class DihedralDataContainer(object):
     Merges energies with metadata
     """
 
-    def __init__(self, energies_data: List[Dict[str, Union[float, Dict[int, float]]]],
-                 angle_mapping: Dict[int, DihedralType]):
+    def __init__(self, energy:float, dihedrals:List[Dict[int, float]], angle_mapping: Dict[int, DihedralType]):
         """
         Creates
-        :param energies_data: list of dictionaries containing energies (in kj/mol) for given angles (in degrees)
-                example dictionary: {'energy': 19.1844, 'dihedrals': {0: 175.995, 1: 102.256, 2: -179.726, 3: 81.27}}
         :param angle_mapping: translation between angle number and DihedralType
         """
         super().__init__()
-        self.energies = []
-        self.dihedrals = []
-        dihedral_nums_groupped_by_string = self.__group_dihedrals(angle_mapping)
-        print(dihedral_nums_groupped_by_string)
-        for energy_data in energies_data:
-            data_for_given_energy = {}
-            for dihedral_string, dihetral_numbers in dihedral_nums_groupped_by_string.items():
-                data_for_given_energy[dihedral_string] = tuple(
-                    [energy_data['dihedrals'][dihetral_number] for dihetral_number in dihetral_numbers])
-            self.energies.append(energy_data['energy'])
-            self.dihedrals.append(data_for_given_energy)
+        self.energy = energy
+        # dihedral_nums_groupped_by_string = self.__group_dihedrals(angle_mapping)
+        assert all(dihedrals[0].keys() == dihedrals[x].keys() for x in range(1, len(dihedrals)))
+        self.dihedrals = self.__create_dihedral_matrix(dihedrals)
+        self.dihedral_type_to_row_index_mapping = self.__group_dihedrals(angle_mapping)
+        #self.mapping_between_angle_number_and_dihedral_pos_in_matrix = {i:x for i, x in enumerate(dihedrals[0])}
+
 
     @staticmethod
     def __group_dihedrals(angle_mapping: Dict[int, DihedralType]) -> Dict[str, List[int]]:
@@ -140,41 +134,59 @@ class DihedralDataContainer(object):
             i += 1
         return ret_dict
 
-    def items(self):
-        return zip(self.dihedrals, self.energies)
-
-    def __len__(self):
-        assert len(self.energies) == len(self.dihedrals)
-        return len(self.energies)
-
-    def get_energies(self) -> np.ndarray:
-        return np.array(self.energies)
-
-    def get_dihedrals(self) -> np.ndarray:
-        shape = (len(self), sum(len(v) for k, v in self.dihedrals[0].items()))
-        array = np.empty(shape, dtype=float)
-        for i, dihedral_data in enumerate(self.dihedrals):
-            j = 0
-            for dihedral_string, dihedral_values in dihedral_data.items():
-                k = len(dihedral_values)
-                array[i][j:j + k] = dihedral_values
-                j += k
+    @staticmethod
+    def __create_dihedral_matrix(dihedrals:List[Dict[int, float]]) ->np.ndarray:
+        assert all(len(dihedrals[x]) == len(dihedrals[0]) for x in range(1, len(dihedrals)))
+        array = np.empty((len(dihedrals), len(dihedrals[0])),)
+        for i, sub_dict in enumerate(dihedrals):
+            for j, element in enumerate(sub_dict.values()):
+                array[i, j] = element
         return array
 
+
+    # def items(self):
+    #     return zip(self.dihedrals, self.energies)
+    #
+    # def __len__(self):
+    #     assert len(self.energies) == len(self.dihedrals)
+    #     return len(self.energies)
+    #
+    # def get_energies(self) -> np.ndarray:
+    #     return np.array(self.energies)
+    #
+    # def get_dihedrals(self) -> np.ndarray:
+    #     shape = (len(self), sum(len(v) for k, v in self.dihedrals[0].items()))
+    #     array = np.empty(shape, dtype=float)
+    #     for i, dihedral_data in enumerate(self.dihedrals):
+    #         j = 0
+    #         for dihedral_string, dihedral_values in dihedral_data.items():
+    #             k = len(dihedral_values)
+    #             array[i][j:j + k] = dihedral_values
+    #             j += k
+    #     return array2
+
+
+def read_data(data_file_path:str, mapping_file_path:str) -> DihedralDataContainer:
+    reader = JsonMapFileReader(mapping_file_path)
+    mapping = reader.read()
+    reader = YamlEnergyReader(data_file_path)
+    energy, dihedrals = reader.read()
+    return DihedralDataContainer(energy, dihedrals, mapping)
 
 if __name__ == '__main__':
     print(DihedralType('OS-CT-CT-CT', []))
     print(DihedralType('OS-CT-CT-CT', []) == DihedralType('CT-CT-CT-OS', []))
-    reader = JsonMapFileReader("/home/wojtek/PycharmProjects/dihedral_fitter/sample_files/plik1.json")
-    mapping = reader.read()
-    reader = YamlEnergyReader("/home/wojtek/PycharmProjects/dihedral_fitter/sample_files/E_zRB.yaml")
-    energies = reader.read()
-    print(len(energies))
-    ddc = DihedralDataContainer(energies, mapping)
-    for k, v in ddc.items():
-        print(len(k), k)
-        print(v)
-        break
-    print(len(ddc))
-    print(type(ddc.get_energies()), ddc.get_energies())
-    print(ddc.get_dihedrals())
+    # reader = JsonMapFileReader("/home/wojtek/PycharmProjects/dihedral_fitter/sample_files/plik1.json")
+    # mapping = reader.read()
+    # reader = YamlEnergyReader("/home/wojtek/PycharmProjects/dihedral_fitter/sample_files/E_zRB-fixed.yaml")
+    # energy, dihedrals = reader.read()
+    # print(dihedrals[0])
+    # ddc = DihedralDataContainer(energy, dihedrals, mapping)
+    ddc = read_data("/home/wojtek/PycharmProjects/dihedral_fitter/sample_files/E_zRB-fixed.yaml", "/home/wojtek/PycharmProjects/dihedral_fitter/sample_files/plik1.json")
+    # for k, v in ddc.items():
+    #     print(len(k), k)
+    #     print(v)
+    #     break
+    # print(len(ddc))
+    # print(type(ddc.get_energies()), ddc.get_energies())
+    # print(ddc.get_dihedrals())
