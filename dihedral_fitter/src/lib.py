@@ -5,20 +5,25 @@ import math
 import numpy as np
 from typing import Sequence
 from typing import Union
-from typing import Iterable
+from typing import Dict
 from typing import List
 
 
 def ryckaert_bellemans_function(c_parameters: Sequence[Union[int, float]],
-                                phi_angles: Iterable[Union[int, float]]) -> List[float]:
+                                phi_angle: float) -> float:
     """
     Computes Ryckaert-Bellmans function for given C parameters and phi angles  for one type of dihedrals using
     the formula:
     f(phi) = sum_n_from_0_to_len_c_params( (-1)^n*Cn*cos^n(phi)) )
     """
-    return [
-        sum(math.pow(-1, n) * c_parameters[n] * math.pow(math.cos(phi), n) for n in range(len(c_parameters))) for phi in
-        phi_angles]
+    # ret_arr = np.empty(phi_angles.shape[0])
+    # for i, phi_angle_set in enumerate(phi_angles): #to gówno do poprawienia
+    #     sum_for_angle_set = 0
+    #     for phi in phi_angle_set:
+    #         sum_for_angle_set += sum([math.pow(-1, n) * c_parameters[n] * np.power(np.cos(phi), n) for n in range(len(c_parameters))])
+    #     ret_arr[i] = sum_for_angle_set
+    # return ret_arr
+    return sum([math.pow(-1, n) * c_parameters[n] * math.pow(math.cos(phi_angle), n) for n in range(len(c_parameters))])
 
 
 def rmsd(array_a: np.ndarray, array_b: np.ndarray) -> float:
@@ -71,3 +76,6 @@ def substract_lists_of_arrays(data_a: List[np.ndarray], data_b: List[np.ndarray]
         # print(data_b[i])
         ret_list.append(data_a[i] - data_b[i])
     return ret_list
+
+def rev_dict(a_dict:Dict)->Dict:
+    return {v:k for k, v in a_dict.items()}
