@@ -4,12 +4,11 @@
 import math
 import numpy as np
 from typing import Sequence
-from typing import Union
 from typing import Dict
 from typing import List
 
 
-def ryckaert_bellemans_function(c_parameters: Sequence[Union[int, float]],
+def ryckaert_bellemans_function(c_parameters: Sequence[int or float],
                                 phi_angle: float) -> float:
     """
     Computes Ryckaert-Bellmans function for given C parameters and phi angles  for one type of dihedrals using
