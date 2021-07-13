@@ -45,11 +45,17 @@ def validate_num_of_params_per_dihedral_type(params_for_dihedral_types: Dict[str
                                f'type. Correct it for {dihedral_type}.')
 
 
-def save_computed_params(params_array: np.ndarray, dihedral_types: Iterable[str], num_of_params_per_dihedral_type: int,
-                         path: str) -> None:
+def computed_params_to_json(params_array: np.ndarray, dihedral_types: Iterable[str],
+                            num_of_params_per_dihedral_type: int) -> str:
     out = {}
     for i, dihedral_type in enumerate(dihedral_types):
         out[dihedral_type] = list(
             params_array[i * num_of_params_per_dihedral_type: (i + 1) * num_of_params_per_dihedral_type])
+    return json.dumps(out, indent=4)
+
+
+def save_computed_params(params_array: np.ndarray, dihedral_types: Iterable[str], num_of_params_per_dihedral_type: int,
+                         path: str) -> None:
+    content = computed_params_to_json(params_array, dihedral_types, num_of_params_per_dihedral_type)
     with open(path, 'w') as f:
-        json.dump(out, f, indent=4)
+        f.write(content)
